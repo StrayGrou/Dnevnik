@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Записи — Личный дневник</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<header class="navbar">
+    <a th:href="@{/notes}" class="brand">Личный дневник</a>
+    <div class="user-panel">
+        <span class="user-name" th:text="${userLogin}"></span>
+        <a th:href="@{/logout}" class="btn btn-secondary">Выйти</a>
+    </div>
+</header>
+
+<main class="dashboard">
+    <aside class="create-sidebar">
+        <h2 class="sidebar-title">Новая запись</h2>
+        <form th:action="@{/notes/save}" method="post">
+            <div class="form-group">
+                <label class="form-label">Заголовок</label>
+                <input type="text" name="title" class="form-input" required placeholder="О чем эта запись?">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Настроение</label>
+                <select name="mood" class="form-select" required>
+                    <option th:each="m : ${moods}" th:value="${m}" th:text="${m}"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Текст записи</label>
+                <textarea name="content" class="form-textarea" required placeholder="Запишите свои мысли..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="background-color: #6d42c7; border-color: #5b35a8;">Сохранить запись</button>
+        </form>
+    </aside>
+
+    <section class="notes-section">
+        <div class="toolbar">
+            <span class="section-heading">Мои записи</span>
+            <form th:action="@{/notes}" method="get" class="filter-group">
+                <span class="filter-label">Настроение:</span>
+                <select name="mood" class="select-control" onchange="this.form.submit()">
+                    <option value="">Все записи</option>
+                    <option th:each="m : ${moods}" th:value="${m}" th:text="${m}" th:selected="${m == selectedMood}"></option>
+                </select>
+                <a th:if="${selectedMood != null and !selectedMood.isEmpty()}" th:href="@{/notes}" class="btn-reset">Сбросить</a>
+            </form>
+        </div>
+
+        <div class="notes-grid">
+            <div th:if="${#lists.isEmpty(notes)}" class="empty-state">
+                Записей пока нет. Заполните форму слева, чтобы добавить первую заметку.
+            </div>
+
+            <a th:each="note : ${notes}" th:href="@{/notes/{id}(id=${note.id})}" class="note-card">
+                <div>
+                    <div class="card-top">
+                        <h3 class="card-title" th:text="${note.title}"></h3>
+                        <div class="mood-smiley" th:switch="${note.mood}" th:title="${note.mood}">
+                            <span th:case="'Отличное'">😄</span>
+                            <span th:case="'Хорошее'">🙂</span>
+                            <span th:case="'Нормальное'">😐</span>
+                            <span th:case="'Плохое'">😔</span>
+                        </div>
+                    </div>
+                    <p class="card-preview" th:text="${note.content}"></p>
+                </div>
+
+                <div class="card-bottom">
+                    <span class="mood-tag" th:text="${note.mood}"></span>
+                    <span th:text="${#temporals.format(note.createdAt, 'dd.MM.yyyy HH:mm')}"></span>
+                </div>
+            </a>
+        </div>
+    </section>
+</main>
+
+
+<script th:src="@{/sakura.js}"></script>
+</body>
+</html>
